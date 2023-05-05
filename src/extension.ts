@@ -25,7 +25,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
 
 
-    context.subscriptions.push(vscode.commands.registerCommand('cobot-code-checker.getList', async () => {
+    context.subscriptions.push(vscode.commands.registerCommand('cobot-sast-vscode.getList', async () => {
         try {
             const { serverAddress } = loginController.getConfig();
             const res = await axios.get(`${serverAddress}/cobot/project/listProjectByFilter?pageNum=0&pageSize=20&sortBy=desc&sortName=modifyDate&star=false`);
@@ -35,7 +35,7 @@ export async function activate(context: vscode.ExtensionContext) {
         }
     }));
 
-    context.subscriptions.push(vscode.commands.registerCommand('cobot-code-checker.checkProject', async () => {
+    context.subscriptions.push(vscode.commands.registerCommand('cobot-sast-vscode.checkProject', async () => {
         const { serverAddress } = loginController.getConfig();
         try {
             const searchName = await vscode.window.showInputBox({
@@ -117,7 +117,7 @@ export async function activate(context: vscode.ExtensionContext) {
         }
     }));
 
-    context.subscriptions.push(vscode.commands.registerCommand('cobot-code-checker.uploadProject', () => {
+    context.subscriptions.push(vscode.commands.registerCommand('cobot-sast-vscode.uploadProject', () => {
         const { serverAddress } = loginController.getConfig();
         const fileTestController = new FileUploadController();
         fileTestController.selectFolder(serverAddress);
@@ -126,13 +126,13 @@ export async function activate(context: vscode.ExtensionContext) {
     const historyProvider = new HistoryTreeDataProvider();
 
     context.subscriptions.push(
-        vscode.commands.registerCommand('cobot-code-checker.history.refresh', () => {
+        vscode.commands.registerCommand('cobot-sast-vscode.history.refresh', () => {
             historyProvider.refresh();
         })
     );
 
     context.subscriptions.push(
-        vscode.commands.registerCommand('cobot-code-checker.history.clear', () => {
+        vscode.commands.registerCommand('cobot-sast-vscode.history.clear', () => {
             // TODO: 清除检测历史记录
             vscode.window.showInformationMessage('TODO清除检测历史!');
         })

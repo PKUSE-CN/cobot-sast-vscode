@@ -1,5 +1,5 @@
 {
-    "name": "cobot-code-checker",
+    "name": "cobot-sast-vscode",
     "displayName": "库博静态代码分析工具",
     "description": "可以直接对当前项目进行静态分析的插件",
     "version": "0.0.1",
@@ -22,32 +22,32 @@
     "contributes": {
         "commands": [
             {
-                "command": "cobot-code-checker.uploadProject",
+                "command": "cobot-sast-vscode.uploadProject",
                 "category": "库博静态代码分析工具",
                 "title": "上传项目"
             },
             {
-                "command": "cobot-code-checker.checkProject",
+                "command": "cobot-sast-vscode.checkProject",
                 "category": "库博静态代码分析工具",
                 "title": "检测项目"
             },
             {
-                "command": "cobot-code-checker.history.refresh",
+                "command": "cobot-sast-vscode.history.refresh",
                 "category": "库博静态代码分析工具",
                 "title": "刷新历史记录"
             },
             {
-                "command": "cobot-code-checker.history.clear",
+                "command": "cobot-sast-vscode.history.clear",
                 "category": "库博静态代码分析工具",
                 "title": "清除历史记录"
             },
             {
-                "command": "cobot-code-checker.getList",
+                "command": "cobot-sast-vscode.getList",
                 "category": "库博静态代码分析工具",
                 "title": "获取项目列表"
             },
             {
-                "command": "cobot-code-checker.login",
+                "command": "cobot-sast-vscode.login",
                 "category": "库博静态代码分析工具",
                 "title": "登录"
             }
@@ -80,22 +80,22 @@
         "configuration": {
             "title": "库博静态代码分析工具",
             "properties": {
-                "cobot-code-checker.username": {
+                "cobot-sast-vscode.username": {
                     "type": "string",
                     "default": "",
                     "description": "库博静态代码分析工具用户名"
                 },
-                "cobot-code-checker.password": {
+                "cobot-sast-vscode.password": {
                     "type": "secret",
                     "default": "",
                     "description": "库博静态代码分析工具密码"
                 },
-                "cobot-code-checker.address": {
+                "cobot-sast-vscode.address": {
                     "type": "string",
                     "default": "",
                     "description": "库博静态代码分析服务端地址"
                 },
-                "cobot-code-checker.projectId": {
+                "cobot-sast-vscode.projectId": {
                     "type": "string",
                     "default": "",
                     "description": "当前检测项目Id"

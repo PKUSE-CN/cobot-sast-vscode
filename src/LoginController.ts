@@ -24,7 +24,7 @@ export class LoginController {
      * @returns config实体和配置文件里的数据
      */
     getConfig() {
-        const config = vscode.workspace.getConfiguration('cobot-code-checker');
+        const config = vscode.workspace.getConfiguration('cobot-sast-vscode');
         const serverAddress = config.get<string>('address');
         const username = config.get<string>('username');
         const password = config.get<string>('password');
@@ -134,7 +134,7 @@ export class LoginController {
 export function loginCommand(context: vscode.ExtensionContext) {
     // 注册一个命令，用于用户点击登录按钮时触发
     context.subscriptions.push(
-        vscode.commands.registerCommand('cobot-code-checker.login', async () => {
+        vscode.commands.registerCommand('cobot-sast-vscode.login', async () => {
             const loginController = new LoginController(context);
             await loginController.login();
         })
