@@ -117,14 +117,14 @@ export class LoginController {
             } else {
                 vscode.window.showErrorMessage('登录失败，请检查用户名密码是否正确，是否重新输入信息？', '是', '否').then(async (value) => {
                     if (value === '是') {
-                        this.inputLogin(true);
+                        this.login(true);
                     }
                 });
             }
         } catch (error) {
             vscode.window.showErrorMessage('登录失败，请检查服务地址是否正确，是否重新输入信息？', '是', '否').then(async (value) => {
                 if (value === '是') {
-                    this.inputLogin(true);
+                    this.login(true);
                 }
             });
         }
