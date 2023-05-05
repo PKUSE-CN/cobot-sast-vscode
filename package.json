@@ -1,0 +1,139 @@
+{
+    "name": "cobot-code-checker",
+    "displayName": "库博静态代码分析工具",
+    "description": "可以直接对当前项目进行静态分析的插件",
+    "version": "0.0.1",
+    "publisher": "ghostlhq",
+    "engines": {
+        "vscode": "^1.77.0"
+    },
+    "categories": [
+        "Other"
+    ],
+    "activationEvents": [
+        "onView:*"
+    ],
+    "main": "./dist/extension.js",
+    "icon": "images/logo-cobot.png",
+    "repository": {
+        "type": "git",
+        "url": "http://192.168.1.43:50180/cobot-sast-buss/cobot-sast-plugins/cobot-sast-vscode"
+    },
+    "contributes": {
+        "commands": [
+            {
+                "command": "cobot-code-checker.uploadProject",
+                "category": "库博静态代码分析工具",
+                "title": "上传项目"
+            },
+            {
+                "command": "cobot-code-checker.checkProject",
+                "category": "库博静态代码分析工具",
+                "title": "检测项目"
+            },
+            {
+                "command": "cobot-code-checker.history.refresh",
+                "category": "库博静态代码分析工具",
+                "title": "刷新历史记录"
+            },
+            {
+                "command": "cobot-code-checker.history.clear",
+                "category": "库博静态代码分析工具",
+                "title": "清除历史记录"
+            },
+            {
+                "command": "cobot-code-checker.getList",
+                "category": "库博静态代码分析工具",
+                "title": "获取项目列表"
+            },
+            {
+                "command": "cobot-code-checker.login",
+                "category": "库博静态代码分析工具",
+                "title": "登录"
+            }
+        ],
+        "viewsContainers": {
+            "activitybar": [
+                {
+                    "id": "cobot",
+                    "title": "库博静态代码分析工具",
+                    "icon": "images/cobot_logo_svg.svg"
+                }
+            ]
+        },
+        "views": {
+            "cobot": [
+                {
+                    "id": "current",
+                    "name": "当前检测结果"
+                },
+                {
+                    "id": "history",
+                    "name": "检测历史记录"
+                },
+                {
+                    "id": "session",
+                    "name": "服务配置"
+                }
+            ]
+        },
+        "configuration": {
+            "title": "库博静态代码分析工具",
+            "properties": {
+                "cobot-code-checker.username": {
+                    "type": "string",
+                    "default": "",
+                    "description": "库博静态代码分析工具用户名"
+                },
+                "cobot-code-checker.password": {
+                    "type": "secret",
+                    "default": "",
+                    "description": "库博静态代码分析工具密码"
+                },
+                "cobot-code-checker.address": {
+                    "type": "string",
+                    "default": "",
+                    "description": "库博静态代码分析服务端地址"
+                },
+                "cobot-code-checker.projectId": {
+                    "type": "string",
+                    "default": "",
+                    "description": "当前检测项目Id"
+                }
+            }
+        }
+    },
+    "scripts": {
+        "vscode:prepublish": "npm run package",
+        "compile": "webpack",
+        "watch": "webpack --watch",
+        "package": "webpack --mode production --devtool hidden-source-map",
+        "compile-tests": "tsc -p . --outDir out",
+        "watch-tests": "tsc -p . -w --outDir out",
+        "pretest": "npm run compile-tests && npm run compile && npm run lint",
+        "lint": "eslint src --ext ts",
+        "test": "node ./out/test/runTest.js"
+    },
+    "devDependencies": {
+        "@types/glob": "^8.1.0",
+        "@types/mocha": "^10.0.1",
+        "@types/node": "16.x",
+        "@types/vscode": "^1.77.0",
+        "@types/ws": "^8.5.4",
+        "@typescript-eslint/eslint-plugin": "^5.56.0",
+        "@typescript-eslint/parser": "^5.56.0",
+        "@vscode/test-electron": "^2.3.0",
+        "eslint": "^8.36.0",
+        "glob": "^8.1.0",
+        "mocha": "^10.2.0",
+        "ts-loader": "^9.4.2",
+        "typescript": "^4.9.5",
+        "webpack": "^5.76.3",
+        "webpack-cli": "^5.0.1"
+    },
+    "dependencies": {
+        "axios": "^1.3.6",
+        "form-data": "^4.0.0",
+        "ws": "^8.13.0"
+    }
+}
