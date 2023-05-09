@@ -54,13 +54,13 @@ export class FileUploadController {
             const folderUri = await vscode.window.showOpenDialog({
                 canSelectFolders: selection === '文件夹',
                 canSelectFiles: selection === '压缩包',
-                filters: selection === '压缩包' ? { '压缩包': ['7z', 'ace', 'ain', 'alz', 'apz', 'ar', 'arc', 'ari', 'arj', 'axx', 'bh', 'bhx', 'boo', 'bz', 'bza', 'bz2', 'c00', 'c01', 'c02', 'cab', 'car', 'cbr', 'cbz', 'cp9', 'cpgz', 'cpt', 'dar', 'dd', 'dgc', 'efw', 'f', 'gca', 'gz', 'ha', 'hbc', 'hbc2', 'hbe', 'hki', 'hki1', 'hki2', 'hki3', 'hpk', 'hyp', 'ice', 'imp', 'ipk', 'ish', 'jar', 'jgz', 'jic', 'kgb', 'kz', 'lbr', 'lha', 'lnx', 'lqr', 'lz4', 'lzh', 'lzm', 'lzma', 'lzo', 'lzx', 'md', 'mint', 'mou', 'mpkg', 'mzp', 'nz', 'p7m', 'package', 'pae', 'pak', 'paq6', 'paq7', 'paq8', 'par', 'par2', 'pbi', 'pcv', 'pea', 'pf', 'pim', 'pit', 'piz', 'puz', 'pwa', 'qda', 'r00', 'r01', 'r02', 'r03', 'rk', 'rnc', 'rpm', 'rte', 'rz', 'rzs', 's00', 's01', 's02', 's7z', 'sar', 'sdn', 'sea', 'sfs', 'sfx', 'sh', 'shar', 'shk', 'shr', 'sit', 'sitx', 'spt', 'sqx', 'sqz', 'tar', 'taz', 'tbz', 'tbz2', 'tgz', 'tlz', 'tlz4', 'txz', 'uc2', 'uha', 'uue', 'wot', 'xef', 'xx', 'xxe', 'xz', 'y', 'yz', 'yz1', 'z', 'zap', 'zip', 'zipx', 'zix', 'zoo', 'zz', 'exe'] } : undefined,
                 canSelectMany: false,
                 openLabel: `请选择${selection}`
             });
             if (folderUri) {
-                this.uploadFolder(folderUri[0].path, serverAddress, selection);
-                await config.update('projectPath', folderUri[0].path, vscode.ConfigurationTarget.Global);
+                const folderPath = path.normalize(folderUri[0].fsPath);
+                this.uploadFolder(folderPath, serverAddress, selection);
+                await config.update('projectPath', folderPath, vscode.ConfigurationTarget.Global);
             }
         }
     }
@@ -100,7 +100,7 @@ export class FileUploadController {
                 for (const file of files) {
                     const folderName = path.basename(fileOrFolderPath);
                     const relativePath = path.relative(fileOrFolderPath, file);
-                    const fileName = folderName + '/' + relativePath;
+                    const fileName = path.join(folderName, relativePath);
                     const fileStream = fs.createReadStream(file);
                     formData.append('importFiles', fileStream, { filename: fileName, filepath: fileName });
                 }

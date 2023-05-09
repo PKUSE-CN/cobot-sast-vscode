@@ -1,5 +1,6 @@
 // 导入VSCode API
 import axios from 'axios';
+import path = require('path');
 import * as vscode from 'vscode';
 interface FilePos {
     filePath: string,
@@ -155,7 +156,7 @@ async function openFile(filePath: string, line: number, column: number = 0) {
     const config = vscode.workspace.getConfiguration('cobot-sast-vscode');
     const projectPath = config.get<string>('projectPath');
     if (projectPath) {
-        const normalizedPath = projectPath + '/' + filePath;
+        const normalizedPath = path.join(projectPath, filePath);
         const uri = vscode.Uri.file(normalizedPath);
         try {
             const document = await vscode.workspace.openTextDocument(uri);
