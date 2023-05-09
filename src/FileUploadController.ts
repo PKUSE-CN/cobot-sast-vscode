@@ -59,7 +59,6 @@ export class FileUploadController {
                 openLabel: `请选择${selection}`
             });
             if (folderUri) {
-                console.log(folderUri);
                 this.uploadFolder(folderUri[0].path, serverAddress, selection);
                 await config.update('projectPath', folderUri[0].path, vscode.ConfigurationTarget.Global);
             }
@@ -101,7 +100,7 @@ export class FileUploadController {
                 for (const file of files) {
                     const folderName = path.basename(fileOrFolderPath);
                     const relativePath = path.relative(fileOrFolderPath, file);
-                    const fileName = folderName + '/' + folderName + '/' + relativePath;
+                    const fileName = folderName + '/' + relativePath;
                     const fileStream = fs.createReadStream(file);
                     formData.append('importFiles', fileStream, { filename: fileName, filepath: fileName });
                 }
@@ -115,7 +114,6 @@ export class FileUploadController {
         formData.append('organization', '0');
         formData.append('os', '64');
         formData.append('projectVersion', 'v1.0');
-        console.log(formData);
         try {
             const res = await axios.post(`${serverAddress}/cobot/project/createProject`, formData, {
                 headers: {
@@ -126,7 +124,6 @@ export class FileUploadController {
                 maxContentLength: Infinity,
                 maxBodyLength: Infinity,
             });
-            console.log(res);
             vscode.window.showInformationMessage(res.data.msg);
         } catch (error) {
             console.error(error);

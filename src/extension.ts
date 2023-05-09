@@ -114,6 +114,8 @@ export async function activate(context: vscode.ExtensionContext) {
                             console.log('关闭:', e.reason);
                             if (statusBar.text !== `${selection.label}：检测完成`) {
                                 statusBar.text !== `${selection.label}：检测出错$(error)`;
+                            } else {
+                                statusBar.dispose();
                             }
                             reject(e);
                         };

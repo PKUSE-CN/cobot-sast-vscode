@@ -45,8 +45,8 @@ export class CheckResultTreeDataProvider implements vscode.TreeDataProvider<Chec
     readonly onDidChangeTreeData: vscode.Event<CheckResultTreeItem | undefined> = this._onDidChangeTreeData.event;
     private vulnerabilities: any[] = [];
     private hasMore = true;
-    private pageNum = 1;
-    private pageSize = 1000;
+    private pageNum = 0;
+    private pageSize = 100;
     private total = 0;
 
 
@@ -67,8 +67,9 @@ export class CheckResultTreeDataProvider implements vscode.TreeDataProvider<Chec
             if (serverAddress && projectId) {
                 const res = await axios.get(`${serverAddress}/cobot/defect/listDefectByFilter?pageNum=${this.pageNum}&pageSize=${this.pageSize}&sortBy=asc&sortName=level&projectId=${projectId}&aboutMe=false`);
                 console.log(this.pageNum);
+                console.log(res);
                 this.total = res.data.data.total;
-                if (this.pageNum === 1) {
+                if (this.pageNum === 0) {
                     this.vulnerabilities = await res.data.data.codeDefectVOList.map((x: any) => new CheckResultTreeItem(x.id, x.fileName, x.defectType.name, '', 1, { filePath: x.filePath }));
                 } else {
                     const rest = await res.data.data.codeDefectVOList.map((x: any) => new CheckResultTreeItem(x.id, x.fileName, x.defectType.name, '', 1, { filePath: x.filePath }));
@@ -77,7 +78,7 @@ export class CheckResultTreeDataProvider implements vscode.TreeDataProvider<Chec
                     vscode.window.showInformationMessage(`获取更多，当前${this.vulnerabilities.length}/${this.total}`);
                     if (this.vulnerabilities.length >= this.total || rest.length === 0) {
                         this.hasMore = false;
-                        vscode.window.showInformationMessage('没有更多问题！');
+                        vscode.window.showInformationMessage('所有问题已获取完成！');
                     }
                 }
             } else {
@@ -121,7 +122,7 @@ export class CheckResultTreeDataProvider implements vscode.TreeDataProvider<Chec
         // TODO: 重新获取问题列表
         this._onDidChangeTreeData.fire(undefined);
         this.hasMore = true;
-        this.pageNum = 1;
+        this.pageNum = 0;
         await this.getVulnerability();
         vscode.window.showInformationMessage('刷新成功!');
     }
@@ -155,7 +156,7 @@ async function openFile(filePath: string, line: number, column: number = 0) {
     const config = vscode.workspace.getConfiguration('cobot-sast-vscode');
     const projectPath = config.get<string>('projectPath');
     if (projectPath) {
-        const normalizedPath = projectPath.split('/').slice(0, -1).join('/') + '/' + filePath;
+        const normalizedPath = projectPath + '/' + filePath;
         const uri = vscode.Uri.file(normalizedPath);
         try {
             const document = await vscode.workspace.openTextDocument(uri);
