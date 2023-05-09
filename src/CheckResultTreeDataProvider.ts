@@ -1,6 +1,5 @@
 // 导入VSCode API
 import axios from 'axios';
-import path = require('path');
 import * as vscode from 'vscode';
 interface FilePos {
     filePath: string,
