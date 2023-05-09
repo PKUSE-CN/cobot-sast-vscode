@@ -62,9 +62,10 @@ export class LoginController {
             if (!pattern.test(inputServerAddress)) {
                 inputServerAddress = 'http://' + inputServerAddress;
             }
+            const 地址 = new URL(inputServerAddress);
 
-            await config.update('address', inputServerAddress, vscode.ConfigurationTarget.Global);
-            this._configuration.serverAddress = inputServerAddress;
+            await config.update('address', 地址.origin, vscode.ConfigurationTarget.Global);
+            this._configuration.serverAddress = 地址.origin;
         }
 
         if (!this._configuration.username || !this._configuration.password) {
