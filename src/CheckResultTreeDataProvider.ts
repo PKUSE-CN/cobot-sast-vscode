@@ -63,21 +63,25 @@ export class CheckResultTreeDataProvider implements vscode.TreeDataProvider<Chec
         try {
             const config = vscode.workspace.getConfiguration('cobot-sast-vscode');
             const serverAddress = config.get<string>('address');
-            const id = config.get<string>('projectId');
-            const res = await axios.get(`${serverAddress}/cobot/defect/listDefectByFilter?pageNum=${this.pageNum}&pageSize=${this.pageSize}&sortBy=asc&sortName=level&projectId=${id}&aboutMe=false`);
-            console.log(this.pageNum);
-            this.total = res.data.data.total;
-            if (this.pageNum === 1) {
-                this.vulnerabilities = await res.data.data.codeDefectVOList.map((x: any) => new CheckResultTreeItem(x.id, x.fileName, x.defectType.name, '', 1, { filePath: x.filePath }));
-            } else {
-                const rest = await res.data.data.codeDefectVOList.map((x: any) => new CheckResultTreeItem(x.id, x.fileName, x.defectType.name, '', 1, { filePath: x.filePath }));
-                await this.vulnerabilities.pop();
-                this.vulnerabilities = this.vulnerabilities.concat(rest);
-                vscode.window.showInformationMessage(`获取更多，当前${this.vulnerabilities.length}/${this.total}`);
-                if (this.vulnerabilities.length >= this.total || rest.length === 0) {
-                    this.hasMore = false;
-                    vscode.window.showInformationMessage('没有更多问题！');
+            const projectId = config.get<string>('projectId');
+            if (serverAddress && projectId) {
+                const res = await axios.get(`${serverAddress}/cobot/defect/listDefectByFilter?pageNum=${this.pageNum}&pageSize=${this.pageSize}&sortBy=asc&sortName=level&projectId=${projectId}&aboutMe=false`);
+                console.log(this.pageNum);
+                this.total = res.data.data.total;
+                if (this.pageNum === 1) {
+                    this.vulnerabilities = await res.data.data.codeDefectVOList.map((x: any) => new CheckResultTreeItem(x.id, x.fileName, x.defectType.name, '', 1, { filePath: x.filePath }));
+                } else {
+                    const rest = await res.data.data.codeDefectVOList.map((x: any) => new CheckResultTreeItem(x.id, x.fileName, x.defectType.name, '', 1, { filePath: x.filePath }));
+                    await this.vulnerabilities.pop();
+                    this.vulnerabilities = this.vulnerabilities.concat(rest);
+                    vscode.window.showInformationMessage(`获取更多，当前${this.vulnerabilities.length}/${this.total}`);
+                    if (this.vulnerabilities.length >= this.total || rest.length === 0) {
+                        this.hasMore = false;
+                        vscode.window.showInformationMessage('没有更多问题！');
+                    }
                 }
+            } else {
+
             }
 
         } catch (error) {
@@ -180,11 +184,13 @@ async function getHistoryDetails(defectId: string): Promise<CheckResultTreeItem[
         const config = vscode.workspace.getConfiguration('cobot-sast-vscode');
         const serverAddress = config.get<string>('address');
         const projectId = config.get<string>('projectId');
-        const res = await axios.get(`${serverAddress}/cobot/defect/getDetail?defectId=${defectId}&projectId=${projectId}`);
-        const { id, path, desc, linNum } = res.data.data;
-        const detail: any[] = res.data.data.trackList.map((x: any) => new CheckResultTreeItem(x.id, '缺陷跟踪: ' + x.filePath, x.descript, 'checkResult.showDetails', 0, { filePath: x.filePath, fileLine: x.line },));
-        detail.unshift(new CheckResultTreeItem('detail' + id, path, desc, 'checkResult.showDetails', 0, { filePath: path, fileLine: linNum },));
-        return detail;
+        if (serverAddress && projectId) {
+            const res = await axios.get(`${serverAddress}/cobot/defect/getDetail?defectId=${defectId}&projectId=${projectId}`);
+            const { id, path, desc, linNum } = res.data.data;
+            const detail: any[] = res.data.data.trackList.map((x: any) => new CheckResultTreeItem(x.id, '缺陷跟踪: ' + x.filePath, x.descript, 'checkResult.showDetails', 0, { filePath: x.filePath, fileLine: x.line },));
+            detail.unshift(new CheckResultTreeItem('detail' + id, path, desc, 'checkResult.showDetails', 0, { filePath: path, fileLine: linNum },));
+            return detail;
+        }
     } catch (error) {
         console.error(error);
     }

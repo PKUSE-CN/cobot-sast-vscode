@@ -47,7 +47,7 @@ export class FileUploadController {
 
     async selectFolder(serverAddress: string | undefined, config: vscode.WorkspaceConfiguration) {
         // TODO：选择工作空间下项目
-        const selection = await vscode.window.showQuickPick(['压缩包', '文件夹'], {
+        const selection = await vscode.window.showQuickPick(['文件夹'], {
             placeHolder: '请选择要上传的类型',
         });
         if (selection) {
@@ -66,8 +66,28 @@ export class FileUploadController {
         }
     }
 
+    async nameFolder(serverAddress: string | undefined) {
+        const folderName = await vscode.window.showInputBox({
+            prompt: '请输入上传的项目名称',
+            ignoreFocusOut: true,
+            validateInput: async (value) => {
+                if (!value) {
+                    return '项目名称不能为空';
+                }
+                const res = await axios.get(`${serverAddress}/cobot/project/exits?projectName=${value}`);
+                if (res.data.data) {
+                    return '项目名重复！请重新输入！';
+                }
+                return '';
+            },
+        });
+        return folderName;
+    }
+
+
     async uploadFolder(fileOrFolderPath: string, serverAddress: string | undefined, selection: string) {
         const formData = new FormData();
+        formData.append('projectName', await this.nameFolder(serverAddress));
         formData.append('engine', 'auto');
         formData.append('isUpdateCode', '1');
         formData.append('compileConfig', '{"Java":"Oracle JDK 1.8 8u201(推荐)","C/C++":"5e5b6ed01a9a14794dc35eab","PHP":"5.x(推荐)","Library":"","Python":"3.7(推荐)"}');
@@ -79,22 +99,23 @@ export class FileUploadController {
                 const files = await this.getFilesInFolder(fileOrFolderPath);
                 // 逐个上传文件
                 for (const file of files) {
-                    const fileBuffer = fs.readFileSync(file);
-                    const fileBlob = new Blob([fileBuffer]);
-                    formData.append('importFiles', fileBlob, file);
+                    const folderName = path.basename(fileOrFolderPath);
+                    const relativePath = path.relative(fileOrFolderPath, file);
+                    const fileName = folderName + '/' + folderName + '/' + relativePath;
+                    const fileStream = fs.createReadStream(file);
+                    formData.append('importFiles', fileStream, { filename: fileName, filepath: fileName });
                 }
                 break;
             case '压缩包':
                 formData.append('importType', 'file');
-                formData.append('importFiles', fs.createReadStream(fileOrFolderPath), path.basename(fileOrFolderPath));
+                formData.append('importFiles', fs.createReadStream(fileOrFolderPath), fileOrFolderPath);
             default:
                 break;
         }
         formData.append('organization', '0');
         formData.append('os', '64');
-        formData.append('projectName', 'vscode-extension-test');
         formData.append('projectVersion', 'v1.0');
-
+        console.log(formData);
         try {
             const res = await axios.post(`${serverAddress}/cobot/project/createProject`, formData, {
                 headers: {
@@ -108,7 +129,7 @@ export class FileUploadController {
             console.log(res);
             vscode.window.showInformationMessage(res.data.msg);
         } catch (error) {
-            console.log(error);
+            console.error(error);
         }
     }
 
