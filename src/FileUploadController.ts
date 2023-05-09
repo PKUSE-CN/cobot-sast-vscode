@@ -45,7 +45,8 @@ export class FileUploadController {
         }
     }
 
-    async selectFolder(serverAddress: string | undefined) {
+    async selectFolder(serverAddress: string | undefined, config: vscode.WorkspaceConfiguration) {
+        // TODO：选择工作空间下项目
         const selection = await vscode.window.showQuickPick(['压缩包', '文件夹'], {
             placeHolder: '请选择要上传的类型',
         });
@@ -60,6 +61,7 @@ export class FileUploadController {
             if (folderUri) {
                 console.log(folderUri);
                 this.uploadFolder(folderUri[0].path, serverAddress, selection);
+                await config.update('projectPath', folderUri[0].path, vscode.ConfigurationTarget.Global);
             }
         }
     }
@@ -96,6 +98,7 @@ export class FileUploadController {
         try {
             const res = await axios.post(`${serverAddress}/cobot/project/createProject`, formData, {
                 headers: {
+                    // eslint-disable-next-line @typescript-eslint/naming-convention
                     "Content-Type": "multipart/form-data",
                 },
                 timeout: 7200000,

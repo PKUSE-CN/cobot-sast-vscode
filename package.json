@@ -32,14 +32,9 @@
                 "title": "检测项目"
             },
             {
-                "command": "cobot-sast-vscode.history.refresh",
+                "command": "cobot-sast-vscode.checkResult.refresh",
                 "category": "库博静态代码分析工具",
-                "title": "刷新历史记录"
-            },
-            {
-                "command": "cobot-sast-vscode.history.clear",
-                "category": "库博静态代码分析工具",
-                "title": "清除历史记录"
+                "title": "获取检测结果"
             },
             {
                 "command": "cobot-sast-vscode.getList",
@@ -64,16 +59,16 @@
         "views": {
             "cobot": [
                 {
-                    "id": "current",
-                    "name": "当前检测结果"
+                    "id": "info",
+                    "name": "项目信息"
                 },
                 {
-                    "id": "history",
-                    "name": "检测历史记录"
+                    "id": "checkResult",
+                    "name": "检测结果"
                 },
                 {
-                    "id": "session",
-                    "name": "服务配置"
+                    "id": "setting",
+                    "name": "项目配置"
                 }
             ]
         },
@@ -99,6 +94,11 @@
                     "type": "string",
                     "default": "",
                     "description": "当前检测项目Id"
+                },
+                "cobot-sast-vscode.projectPath": {
+                    "type": "string",
+                    "default": "",
+                    "description": "当前检测项目路径"
                 }
             }
         }

@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { HistoryTreeDataProvider, registerShowDetailsCommand } from './HistoryTreeProvider';
+import { CheckResultTreeDataProvider, registerShowDetailsCommand, registerShowMoreCommand } from './CheckResultTreeDataProvider';
 
 import axios from 'axios';
 import { LoginController, loginCommand } from './LoginController';
@@ -36,10 +36,12 @@ export async function activate(context: vscode.ExtensionContext) {
     }));
 
     context.subscriptions.push(vscode.commands.registerCommand('cobot-sast-vscode.checkProject', async () => {
-        const { serverAddress } = loginController.getConfig();
+        const { serverAddress, config } = loginController.getConfig();
         try {
+            // TODO: 从设置里获取ID
             const searchName = await vscode.window.showInputBox({
                 prompt: '请输入项目名',
+                ignoreFocusOut: true,
                 validateInput: (value) => {
                     if (!value) {
                         return '项目名不能为空';
@@ -53,6 +55,7 @@ export async function activate(context: vscode.ExtensionContext) {
                 placeHolder: '请选择要检测的项目',
                 ignoreFocusOut: true,
             });
+            await config.update('projectId', selection.projectId, vscode.ConfigurationTarget.Global);
             if (selection) {
                 if (selection.analysisStatus === 2) {
                     const reCheck = await vscode.window.showQuickPick([{ label: '是' }, { label: '否', description: '直接获取检测结果' }], {
@@ -61,12 +64,14 @@ export async function activate(context: vscode.ExtensionContext) {
                     });
                     if (reCheck?.label !== '是') {
                         // TODO: 获取检测结果
+                        vscode.commands.executeCommand('cobot-sast-vscode.checkResult.refresh');
                         return;
                     }
                 }
                 if (selection.analysisStatus !== 1) {
                     const inQueue = await axios.post(`${serverAddress}/cobot/currentCheckList/batchAdd`, { projectIdList: [selection.projectId] });
                     if (!inQueue.data.areSuccess) {
+                        // TODO：补一个retry
                         vscode.window.showErrorMessage('开始检测失败，请重试');
                         return;
                     }
@@ -86,18 +91,22 @@ export async function activate(context: vscode.ExtensionContext) {
                             statusBar.show();
                             statusBar.text = `${selection.label}：开始检测`;
                         };
+                        let lastRate = 0;
                         ws.onmessage = (event: any) => {
                             console.log(event);
                             if (event.data.startsWith(`rate`)) {
                                 const rate = Number(event.data.split(`:`)[1]);
-                                progress.report({ message: `检测中，进度${rate}%`, increment: rate });
+                                const increment = rate - lastRate;
+                                lastRate = rate;
+                                progress.report({ message: `检测中，进度${rate}%`, increment: increment });
                                 statusBar.text = `${selection.label}：$(sync~spin)检测中${rate}%`;
                                 if (rate === 100) {
-                                    progress.report({ message: `检测完成！`, increment: rate });
+                                    progress.report({ message: `检测完成！`, increment: increment });
+                                    vscode.window.showInformationMessage(`${selection.label}检测完成！`);
                                     statusBar.text = `${selection.label}：检测完成`;
                                     // TODO: 获取检测结果
+                                    vscode.commands.executeCommand('cobot-sast-vscode.checkResult.refresh');
                                     resolve();
-
                                 }
                             }
                         };
@@ -118,33 +127,28 @@ export async function activate(context: vscode.ExtensionContext) {
     }));
 
     context.subscriptions.push(vscode.commands.registerCommand('cobot-sast-vscode.uploadProject', () => {
-        const { serverAddress } = loginController.getConfig();
+        const { serverAddress, config } = loginController.getConfig();
         const fileTestController = new FileUploadController();
-        fileTestController.selectFolder(serverAddress);
+        fileTestController.selectFolder(serverAddress, config);
     }));
 
-    const historyProvider = new HistoryTreeDataProvider();
+    const checkResultProvider = new CheckResultTreeDataProvider();
 
     context.subscriptions.push(
-        vscode.commands.registerCommand('cobot-sast-vscode.history.refresh', () => {
-            historyProvider.refresh();
+        vscode.commands.registerCommand('cobot-sast-vscode.checkResult.refresh', () => {
+            checkResultProvider.refresh();
         })
     );
 
-    context.subscriptions.push(
-        vscode.commands.registerCommand('cobot-sast-vscode.history.clear', () => {
-            // TODO: 清除检测历史记录
-            vscode.window.showInformationMessage('TODO清除检测历史!');
-        })
-    );
 
     // 注册显示检测历史记录的详细信息命令
     registerShowDetailsCommand(context);
+    registerShowMoreCommand(context, checkResultProvider);
 
     loginCommand(context);
 
     // 注册侧边栏
-    vscode.window.registerTreeDataProvider('history', historyProvider);
+    vscode.window.registerTreeDataProvider('checkResult', checkResultProvider);
 
 }
 
