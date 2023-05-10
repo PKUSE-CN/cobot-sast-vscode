@@ -6,23 +6,25 @@ interface FilePos {
     filePath: string,
     fileLine: number,
     fileColumn: number,
+    fileColumnEnd: number,
 }
 
 class CheckResultTreeItem extends vscode.TreeItem {
-    filePosition: { filePath: string; fileLine: number; fileColumn: number; };
+    filePosition: FilePos;
     constructor(
         public readonly id: string,
         public readonly label: string,
         public readonly description: string,
         public readonly commandName: string,
         public readonly collapsible?: vscode.TreeItemCollapsibleState,
-        { filePath = '', fileLine = 0, fileColumn = 0 }: Partial<FilePos> = {}
+        { filePath = '', fileLine = 0, fileColumn = 0, fileColumnEnd = 0 }: Partial<FilePos> = {}
     ) {
         super(label, collapsible);
         this.filePosition = {
             filePath,
             fileLine,
             fileColumn,
+            fileColumnEnd,
         };
         if (commandName) {
             this.command = {
@@ -132,8 +134,8 @@ export class CheckResultTreeDataProvider implements vscode.TreeDataProvider<Chec
 export function registerShowDetailsCommand(context: vscode.ExtensionContext) {
     context.subscriptions.push(
         vscode.commands.registerCommand('checkResult.showDetails', ({ label, description, filePosition }: CheckResultTreeItem) => {
-            const { fileColumn, fileLine, filePath } = filePosition;
-            openFile(filePath, fileLine, fileColumn);
+            const { fileColumn, fileColumnEnd, fileLine, filePath } = filePosition;
+            openFile(filePath, fileLine, fileColumn, fileColumnEnd);
             vscode.window.showInformationMessage(`${label}\n${description}`);
         })
     );
@@ -152,23 +154,26 @@ export function registerShowMoreCommand(context: vscode.ExtensionContext, provid
 }
 
 
-async function openFile(filePath: string, line: number, column: number = 0) {
+async function openFile(filePath: string, line: number, column: number = 0, columnEnd: number = 0) {
     const config = vscode.workspace.getConfiguration('cobot-sast-vscode');
     const projectPath = config.get<string>('projectPath');
     if (projectPath) {
         const normalizedPath = path.join(projectPath, filePath);
         const uri = vscode.Uri.file(normalizedPath);
+        const realLine = line - 1;
         try {
             const document = await vscode.workspace.openTextDocument(uri);
             const editor = await vscode.window.showTextDocument(document);
-            const range = document.lineAt(line - 1).range;
-            const decoration = vscode.window.createTextEditorDecorationType({
-                backgroundColor: 'red',
-                color: 'white'
-            });
-            editor.setDecorations(decoration, [range]);
-            editor.selection = new vscode.Selection(new vscode.Position(line - 1, column), new vscode.Position(line - 1, column));
-            editor.revealRange(range, vscode.TextEditorRevealType.InCenter);
+            if (realLine >= 0) {
+                const range = document.lineAt(realLine).range;
+                const decoration = vscode.window.createTextEditorDecorationType({
+                    backgroundColor: '#ff000030',
+                    isWholeLine: true,
+                });
+                editor.setDecorations(decoration, [range]);
+                editor.selection = new vscode.Selection(new vscode.Position(realLine, column), new vscode.Position(realLine, columnEnd));
+                editor.revealRange(range, vscode.TextEditorRevealType.InCenter);
+            }
         } catch (error) {
             vscode.window.showErrorMessage(`Failed to open ${normalizedPath}: ${error}`);
         }
