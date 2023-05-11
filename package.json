@@ -17,7 +17,7 @@
     "icon": "images/logo-cobot.png",
     "repository": {
         "type": "git",
-        "url": "http://192.168.1.43:50180/cobot-sast-buss/cobot-sast-plugins/cobot-sast-vscode"
+        "url": "https://github.com/PKUSE-CN/cobot-sast-vscode"
     },
     "contributes": {
         "commands": [
