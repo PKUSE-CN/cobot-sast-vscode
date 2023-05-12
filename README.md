@@ -19,7 +19,6 @@
 
 [Visual Studio 市场]: https://marketplace.visualstudio.com/items?itemName=PKUSE.cobot-sast-vscode
 
-
 [下载]: https://github.com/PKUSE-CN/cobot-sast-vscode/releases
 
 <!-- ## 配置
