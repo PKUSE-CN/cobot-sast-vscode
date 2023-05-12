@@ -17,9 +17,10 @@
 
 [库博静态代码分析工具前端服务]: http://192.168.1.43:50180/cobot-sast-buss/cobot-fe
 
-[Visual Studio 市场]: https://marketplace.visualstudio.com/items?itemName=ghostlhq.cobot-sast-vscode//TODO
+[Visual Studio 市场]: https://marketplace.visualstudio.com/items?itemName=PKUSE.cobot-sast-vscode
 
-[下载]: https://TODO
+
+[下载]: https://github.com/PKUSE-CN/cobot-sast-vscode/releases
 
 <!-- ## 配置
 
