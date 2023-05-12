@@ -5,6 +5,7 @@ import axios from 'axios';
 import { LoginController, loginCommand } from './LoginController';
 import { FileUploadController } from './FileUploadController';
 import { WebSocket } from 'ws';
+import path = require('path');
 
 
 
@@ -24,17 +25,6 @@ export async function activate(context: vscode.ExtensionContext) {
     }
 
 
-
-    context.subscriptions.push(vscode.commands.registerCommand('cobot-sast-vscode.getList', async () => {
-        try {
-            const { serverAddress } = loginController.getConfig();
-            const res = await axios.get(`${serverAddress}/cobot/project/listProjectByFilter?pageNum=0&pageSize=20&sortBy=desc&sortName=modifyDate&star=false`);
-            console.log(res);
-        } catch (error) {
-            console.log(error);
-        }
-    }));
-
     context.subscriptions.push(vscode.commands.registerCommand('cobot-sast-vscode.checkProject', async () => {
         const { serverAddress, config } = loginController.getConfig();
         try {
@@ -50,7 +40,6 @@ export async function activate(context: vscode.ExtensionContext) {
                 },
             });
             const res = await axios.get(`${serverAddress}/cobot/project/listProjectByFilter?pageNum=0&pageSize=20&sortBy=desc&sortName=modifyDate&star=false&projectName=${searchName}`);
-            console.log(res);
             const selection: any = await vscode.window.showQuickPick(res.data.data.projects.map((x: any) => ({ label: x.projectName, description: x.checkDate, projectId: x.id, analysisStatus: x.analysisStatus })), {
                 placeHolder: '请选择要检测的项目',
                 ignoreFocusOut: true,
@@ -86,14 +75,12 @@ export async function activate(context: vscode.ExtensionContext) {
                         });
                         const statusBar = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
                         ws.onopen = e => {
-                            console.log(e);
                             progress.report({ message: `队列中`, increment: 0 });
                             statusBar.show();
                             statusBar.text = `${selection.label}：开始检测`;
                         };
                         let lastRate = 0;
                         ws.onmessage = (event: any) => {
-                            console.log(event);
                             if (event.data.startsWith(`rate`)) {
                                 const rate = Number(event.data.split(`:`)[1]);
                                 const increment = rate - lastRate;
@@ -111,7 +98,6 @@ export async function activate(context: vscode.ExtensionContext) {
                             }
                         };
                         ws.onclose = (e) => {
-                            console.log('关闭:', e.reason);
                             if (statusBar.text !== `${selection.label}：检测完成`) {
                                 statusBar.text !== `${selection.label}：检测出错$(error)`;
                             } else {
@@ -124,7 +110,7 @@ export async function activate(context: vscode.ExtensionContext) {
             }
             // vscode.window.showInformationMessage(res.data);
         } catch (error) {
-            console.log(error);
+            console.error(error);
         }
     }));
 
@@ -139,6 +125,23 @@ export async function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(
         vscode.commands.registerCommand('cobot-sast-vscode.checkResult.refresh', () => {
             checkResultProvider.refresh();
+        })
+    );
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand('cobot-sast-vscode.checkResult.filterResultEditor', async () => {
+            const editor = vscode.window.activeTextEditor;
+            const filePath = editor && editor.document.fileName;
+            const fileName = path.basename(filePath || '');
+            checkResultProvider.refresh(fileName);
+        })
+    );
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand('cobot-sast-vscode.checkResult.filterResultExplorer', async () => {
+            const file = vscode.window.activeTextEditor?.document.uri.fsPath;
+            const fileName = path.basename(file || '');
+            checkResultProvider.refresh(fileName);
         })
     );
 

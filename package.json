@@ -2,7 +2,7 @@
     "name": "cobot-sast-vscode",
     "displayName": "库博静态代码分析工具",
     "description": "可以对项目进行静态分析的插件",
-    "version": "0.0.1",
+    "version": "0.0.2",
     "publisher": "PKUSE",
     "engines": {
         "vscode": "^1.77.0"
@@ -34,12 +34,16 @@
             {
                 "command": "cobot-sast-vscode.checkResult.refresh",
                 "category": "库博静态代码分析工具",
-                "title": "获取检测结果"
+                "title": "刷新检测结果",
+                "icon": "$(refresh)"
             },
             {
-                "command": "cobot-sast-vscode.getList",
-                "category": "库博静态代码分析工具",
-                "title": "获取项目列表"
+                "command": "cobot-sast-vscode.checkResult.filterResultEditor",
+                "title": "筛选编辑器文件结果"
+            },
+            {
+                "command": "cobot-sast-vscode.checkResult.filterResultExplorer",
+                "title": "筛选文件资源管理器结果"
             },
             {
                 "command": "cobot-sast-vscode.login",
@@ -56,11 +60,34 @@
                 }
             ]
         },
+        "menus": {
+            "view/title": [
+                {
+                    "command": "cobot-sast-vscode.checkResult.refresh",
+                    "when": "view == checkResult",
+                    "group": "navigation"
+                }
+            ],
+            "editor/context": [
+                {
+                    "command": "cobot-sast-vscode.checkResult.filterResultEditor",
+                    "group": "menu"
+                }
+            ],
+            "explorer/context": [
+                {
+                    "command": "cobot-sast-vscode.checkResult.filterResultExplorer",
+                    "group": "menu",
+                    "when": "!explorerResourceIsFolder"
+                }
+            ]
+        },
         "views": {
             "cobot": [
                 {
                     "id": "info",
-                    "name": "项目信息"
+                    "name": "项目信息",
+                    "visibility": "collapsed"
                 },
                 {
                     "id": "checkResult",
@@ -68,7 +95,8 @@
                 },
                 {
                     "id": "setting",
-                    "name": "项目配置"
+                    "name": "项目配置",
+                    "visibility": "collapsed"
                 }
             ]
         },
@@ -101,7 +129,65 @@
                     "description": "当前检测项目路径"
                 }
             }
-        }
+        },
+        "colors": [
+            {
+                "id": "level.fatal",
+                "description": "严重等级颜色: 致命",
+                "defaults": {
+                    "dark": "#701212",
+                    "light": "#701212"
+                }
+            },
+            {
+                "id": "level.critical",
+                "description": "严重等级颜色: 严重",
+                "defaults": {
+                    "dark": "#c53030",
+                    "light": "#c53030"
+                }
+            },
+            {
+                "id": "level.important",
+                "description": "严重等级颜色: 重要",
+                "defaults": {
+                    "dark": "#fc5d5d",
+                    "light": "#fc5d5d"
+                }
+            },
+            {
+                "id": "level.minor",
+                "description": "严重等级颜色: 次要",
+                "defaults": {
+                    "dark": "#ffaa33",
+                    "light": "#ffaa33"
+                }
+            },
+            {
+                "id": "level.hint",
+                "description": "严重等级颜色: 提示",
+                "defaults": {
+                    "dark": "#d5c828",
+                    "light": "#d5c828"
+                }
+            },
+            {
+                "id": "level.required",
+                "description": "严重等级颜色: 强制",
+                "defaults": {
+                    "dark": "#4a90e2",
+                    "light": "#4a90e2"
+                }
+            },
+            {
+                "id": "level.suggestion",
+                "description": "严重等级颜色: 建议",
+                "defaults": {
+                    "dark": "#83d232",
+                    "light": "#83d232"
+                }
+            }
+        ]
     },
     "scripts": {
         "vscode:prepublish": "npm run package",

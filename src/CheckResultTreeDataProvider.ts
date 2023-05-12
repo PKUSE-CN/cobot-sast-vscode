@@ -2,6 +2,7 @@
 import axios from 'axios';
 import path = require('path');
 import * as vscode from 'vscode';
+import { getLevelColor } from './defectLevel';
 interface FilePos {
     filePath: string,
     fileLine: number,
@@ -17,15 +18,20 @@ class CheckResultTreeItem extends vscode.TreeItem {
         public readonly description: string,
         public readonly commandName: string,
         public readonly collapsible?: vscode.TreeItemCollapsibleState,
-        { filePath = '', fileLine = 0, fileColumn = 0, fileColumnEnd = 0 }: Partial<FilePos> = {}
+        { filePath = '', fileLine = 0, fileColumn = 0, fileColumnEnd = 0 }: Partial<FilePos> = {},
+        public readonly level?: string | undefined,
     ) {
         super(label, collapsible);
+        this.tooltip = description;
         this.filePosition = {
             filePath,
             fileLine,
             fileColumn,
             fileColumnEnd,
         };
+        if (level) {
+            this.iconPath = new vscode.ThemeIcon('bug', getLevelColor(level));
+        }
         if (commandName) {
             this.command = {
                 title: '展示详情',
@@ -50,7 +56,7 @@ export class CheckResultTreeDataProvider implements vscode.TreeDataProvider<Chec
     private pageNum = 0;
     private pageSize = 100;
     private total = 0;
-
+    private fileName = '';
 
     // 获取树形结构的根节点
     getTreeItem(element: CheckResultTreeItem): vscode.TreeItem {
@@ -67,14 +73,12 @@ export class CheckResultTreeDataProvider implements vscode.TreeDataProvider<Chec
             const serverAddress = config.get<string>('address');
             const projectId = config.get<string>('projectId');
             if (serverAddress && projectId) {
-                const res = await axios.get(`${serverAddress}/cobot/defect/listDefectByFilter?pageNum=${this.pageNum}&pageSize=${this.pageSize}&sortBy=asc&sortName=level&projectId=${projectId}&aboutMe=false`);
-                console.log(this.pageNum);
-                console.log(res);
+                const res = await axios.get(`${serverAddress}/cobot/defect/listDefectByFilter?pageNum=${this.pageNum}&pageSize=${this.pageSize}&sortBy=asc&sortName=level&projectId=${projectId}&aboutMe=false&fileName=${this.fileName}`,);
                 this.total = res.data.data.total;
                 if (this.pageNum === 0) {
-                    this.vulnerabilities = await res.data.data.codeDefectVOList.map((x: any) => new CheckResultTreeItem(x.id, x.fileName, x.defectType.name, '', 1, { filePath: x.filePath }));
+                    this.vulnerabilities = await res.data.data.codeDefectVOList.map((x: any) => new CheckResultTreeItem(x.id, x.fileName, x.defectType.name, '', 1, { filePath: x.filePath }, x.level.name,));
                 } else {
-                    const rest = await res.data.data.codeDefectVOList.map((x: any) => new CheckResultTreeItem(x.id, x.fileName, x.defectType.name, '', 1, { filePath: x.filePath }));
+                    const rest = await res.data.data.codeDefectVOList.map((x: any) => new CheckResultTreeItem(x.id, x.fileName, x.defectType.name, '', 1, { filePath: x.filePath }, x.level.name,));
                     await this.vulnerabilities.pop();
                     this.vulnerabilities = this.vulnerabilities.concat(rest);
                     vscode.window.showInformationMessage(`获取更多，当前${this.vulnerabilities.length}/${this.total}`);
@@ -84,12 +88,12 @@ export class CheckResultTreeDataProvider implements vscode.TreeDataProvider<Chec
                     }
                 }
             } else {
-
+                // TODO：要干嘛来着
             }
-
         } catch (error) {
             console.error(error);
         }
+        await vscode.commands.executeCommand('checkResult.focus');
     }
 
     // 获取树形结构的子节点
@@ -120,11 +124,12 @@ export class CheckResultTreeDataProvider implements vscode.TreeDataProvider<Chec
     }
 
     // 刷新树形结构
-    async refresh(): Promise<void> {
+    async refresh(fileName: string = ''): Promise<void> {
         // TODO: 重新获取问题列表
         this._onDidChangeTreeData.fire(undefined);
         this.hasMore = true;
         this.pageNum = 0;
+        this.fileName = fileName;
         await this.getVulnerability();
         vscode.window.showInformationMessage('刷新成功!');
     }
