@@ -1,9 +1,27 @@
-# Change Log
+# 发布日志
 
-All notable changes to the "cobot-sast-vscode" extension will be documented in this file.
+对 “**cobot-sast-vscode**” 扩展的所有重要更新都将记录在此文件中。
 
-Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
+## [未发布]
 
-## [Unreleased]
+* 无
 
-- Initial release
+## [0.0.1]
+
+* 完成项目的搭建
+* 实现了用户登录、项目上传、项目检测、项目结果展示定位等功能
+* 编写了操作手册并制定了后续开发的任务计划
+
+## [0.0.2]
+
+* 检测结果增加了图标，现在可以通过图标颜色确认严重等级了
+* 增加了按文件筛选检测结果的方法，现在可以通过右键某文件或者右键打开的编辑器窗口来筛选检测结果了
+* 修复了一些显示问题
+
+## [0.0.3]
+
+* 修改config为存储在工作空间配置，防止更换电脑后mac和windows的路径问题(如果进行了工作空间文件夹配置，则优先使用工作空间文件夹配置)，现在必须在使用插件前打开一个文件夹或者将文件夹添加到工作区了
+* 上传项目时增加了选择当前工作空间项目的选项
+* 上传项目时增加了上传文件夹进度，现在可以看到上传的文件夹进度了
+* 增加了配置设置 `cobot-sast-vscode.projectName` 即当前项目名，现在上传项目时会在输入项目名后自动存储项目名
+* 增加了检测时自动匹配项目名的功能，现在会自动匹配配置文件中的项目名称即 `cobot-sast-vscode.projectName` 进行初步搜索了

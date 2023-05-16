@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
-import axios, { toFormData } from 'axios';
+import axios, { AxiosProgressEvent, AxiosRequestConfig, toFormData } from 'axios';
 import FormData = require('form-data');
 import { Blob } from 'buffer';
 
@@ -45,28 +45,41 @@ export class FileUploadController {
         }
     }
 
-    async selectFolder(serverAddress: string | undefined, config: vscode.WorkspaceConfiguration) {
-        // TODO：选择工作空间下项目
-        const selection = await vscode.window.showQuickPick(['文件夹'], {
+    async selectFolder() {
+        const config = vscode.workspace.getConfiguration('cobot-sast-vscode');
+        const options = ['当前工作空间', '从系统中选择文件夹', '取消'];
+        const selection = await vscode.window.showQuickPick(options, {
             placeHolder: '请选择要上传的类型',
         });
-        if (selection) {
+
+        if (selection === '当前工作空间') {
+            const workspaceFolder = await vscode.window.showWorkspaceFolderPick();
+            if (workspaceFolder) {
+                const folderPath = path.normalize(workspaceFolder.uri.fsPath);
+                this.uploadFolder(folderPath);
+                await config.update('projectPath', folderPath);
+            }
+        } else if (selection === '文件夹') {
             const folderUri = await vscode.window.showOpenDialog({
-                canSelectFolders: selection === '文件夹',
-                canSelectFiles: selection === '压缩包',
+                canSelectFolders: true,
+                canSelectFiles: false,
                 canSelectMany: false,
-                openLabel: `请选择${selection}`
+                openLabel: '请选择文件夹',
             });
+
             if (folderUri) {
                 const folderPath = path.normalize(folderUri[0].fsPath);
-                this.uploadFolder(folderPath, serverAddress, selection);
-                await config.update('projectPath', folderPath, vscode.ConfigurationTarget.Global);
+                this.uploadFolder(folderPath);
+                await config.update('projectPath', folderPath);
             }
+        } else {
         }
     }
 
-    async nameFolder(serverAddress: string | undefined) {
-        const folderName = await vscode.window.showInputBox({
+    async nameFolder() {
+        const config = vscode.workspace.getConfiguration('cobot-sast-vscode');
+        const serverAddress = config.get<string>('address');
+        const projectName = await vscode.window.showInputBox({
             prompt: '请输入上传的项目名称',
             ignoreFocusOut: true,
             validateInput: async (value) => {
@@ -80,54 +93,67 @@ export class FileUploadController {
                 return '';
             },
         });
-        return folderName;
+        return projectName;
     }
 
 
-    async uploadFolder(fileOrFolderPath: string, serverAddress: string | undefined, selection: string) {
+    async uploadFolder(fileOrFolderPath: string) {
+        const config = vscode.workspace.getConfiguration('cobot-sast-vscode');
+        const serverAddress = config.get<string>('address');
         const formData = new FormData();
-        formData.append('projectName', await this.nameFolder(serverAddress));
+        const projectName = await this.nameFolder();
+        formData.append('projectName', projectName);
         formData.append('engine', 'auto');
         formData.append('isUpdateCode', '1');
         formData.append('compileConfig', '{"Java":"Oracle JDK 1.8 8u201(推荐)","C/C++":"5e5b6ed01a9a14794dc35eab","PHP":"5.x(推荐)","Library":"","Python":"3.7(推荐)"}');
         formData.append('defectId', '5e57409394bbd91d299f2a1b');
-        switch (selection) {
-            case '文件夹':
-                formData.append('importType', 'fileFolder');
-                // 递归获取文件夹下的所有文件
-                const files = await this.getFilesInFolder(fileOrFolderPath);
-                // 逐个上传文件
-                for (const file of files) {
-                    const folderName = path.basename(fileOrFolderPath);
-                    const relativePath = path.relative(fileOrFolderPath, file);
-                    const fileName = path.join(folderName, relativePath);
-                    const fileStream = fs.createReadStream(file);
-                    formData.append('importFiles', fileStream, { filename: fileName, filepath: fileName });
-                }
-                break;
-            case '压缩包':
-                formData.append('importType', 'file');
-                formData.append('importFiles', fs.createReadStream(fileOrFolderPath), fileOrFolderPath);
-            default:
-                break;
+        formData.append('importType', 'fileFolder');
+        // 递归获取文件夹下的所有文件
+        const files = await this.getFilesInFolder(fileOrFolderPath);
+        // 逐个上传文件
+        const folderName = path.basename(fileOrFolderPath);
+        for (const file of files) {
+            const relativePath = path.relative(fileOrFolderPath, file);
+            const fileName = path.join(folderName, relativePath);
+            const fileStream = fs.createReadStream(file);
+            formData.append('importFiles', fileStream, { filename: fileName, filepath: fileName });
         }
         formData.append('organization', '0');
         formData.append('os', '64');
         formData.append('projectVersion', 'v1.0');
-        try {
-            const res = await axios.post(`${serverAddress}/cobot/project/createProject`, formData, {
-                headers: {
-                    // eslint-disable-next-line @typescript-eslint/naming-convention
-                    "Content-Type": "multipart/form-data",
-                },
-                timeout: 7200000,
-                maxContentLength: Infinity,
-                maxBodyLength: Infinity,
-            });
-            vscode.window.showInformationMessage(res.data.msg);
-        } catch (error) {
-            console.error(error);
-        }
+        await vscode.window.withProgress({
+            location: vscode.ProgressLocation.Notification,
+            title: `${projectName}正在上传`,
+            cancellable: false,
+        }, async (progress) => {
+            try {
+                let previousLoaded = 0; // 用于保存上一次进度事件的 loaded 值
+                const res = await axios.post(`${serverAddress}/cobot/project/createProject`, formData, {
+                    headers: {
+                        // eslint-disable-next-line @typescript-eslint/naming-convention
+                        "Content-Type": "multipart/form-data",
+                    },
+                    timeout: 7200000,
+                    maxContentLength: Infinity,
+                    maxBodyLength: Infinity,
+                    onUploadProgress: (progressEvent: AxiosProgressEvent) => {
+                        console.log(progressEvent);
+                        const loaded = progressEvent.loaded || 0;
+                        const total = progressEvent.total || 100000; // 设置合适的初始值
+                        const increment = loaded - previousLoaded; // 计算增量
+                        const incrementComplete = (increment * 100) / total;
+                        const percentCompleted = Math.round((loaded * 100) / total);
+                        progress.report({ increment: incrementComplete, message: `${percentCompleted}%` });
+                        previousLoaded = loaded; // 更新上一次进度事件的 loaded 值
+                    },
+
+                });
+                vscode.window.showInformationMessage(res.data.msg);
+                await config.update('projectName', projectName);
+            } catch (error) {
+                console.error(error);
+            }
+        });
     }
 
     async getFilesInFolder(folderPath: string): Promise<string[]> {

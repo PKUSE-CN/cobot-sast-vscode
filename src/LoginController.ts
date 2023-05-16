@@ -46,6 +46,7 @@ export class LoginController {
         if (!this._configuration.serverAddress) {
             let inputServerAddress = await vscode.window.showInputBox({
                 prompt: '请输入后端服务地址',
+                ignoreFocusOut: true,
                 validateInput: (value) => {
                     if (!value) {
                         return '服务地址不能为空';
@@ -64,13 +65,14 @@ export class LoginController {
             }
             const 地址 = new URL(inputServerAddress);
 
-            await config.update('address', 地址.origin, vscode.ConfigurationTarget.Global);
+            await config.update('address', 地址.origin);
             this._configuration.serverAddress = 地址.origin;
         }
 
         if (!this._configuration.username || !this._configuration.password) {
             const inputUsername = await vscode.window.showInputBox({
                 prompt: '请输入用户名',
+                ignoreFocusOut: true,
                 validateInput: (value) => {
                     if (!value) {
                         return '用户名不能为空';
@@ -85,6 +87,7 @@ export class LoginController {
 
             const inputPassword = await vscode.window.showInputBox({
                 prompt: '请输入密码',
+                ignoreFocusOut: true,
                 password: true,
                 validateInput: (value) => {
                     if (!value) {
@@ -98,36 +101,40 @@ export class LoginController {
                 return;
             }
 
-            await config.update('username', inputUsername, vscode.ConfigurationTarget.Global);
-            await config.update('password', inputPassword, vscode.ConfigurationTarget.Global);
+            await config.update('username', inputUsername);
+            await config.update('password', inputPassword);
             this._configuration.username = inputUsername;
             this._configuration.password = inputPassword;
         }
     }
 
     async login(notRefresh: boolean = false) {
-        await this.inputLogin(notRefresh);
-        // 发送登录请求
-        try {
-            const { serverAddress, password, username } = this._configuration;
-            const res = await axios.post(`${serverAddress}/cobot/login`, { username, password });
-            console.log(res);
-            if (res.data.status === 0) {
-                vscode.window.showInformationMessage('库博静态代码分析工具连接成功');
-                axios.defaults.headers.common['Cookie'] = res.headers['set-cookie'];
-            } else {
-                vscode.window.showErrorMessage('登录失败，请检查用户名密码是否正确，是否重新输入信息？', '是', '否').then(async (value) => {
+        if (vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 0) {
+            await this.inputLogin(notRefresh);
+            // 发送登录请求
+            try {
+                const { serverAddress, password, username } = this._configuration;
+                const res = await axios.post(`${serverAddress}/cobot/login`, { username, password });
+                console.log(res);
+                if (res.data.status === 0) {
+                    vscode.window.showInformationMessage('库博静态代码分析工具连接成功');
+                    axios.defaults.headers.common['Cookie'] = res.headers['set-cookie'];
+                } else {
+                    vscode.window.showErrorMessage('登录失败，请检查用户名密码是否正确，是否重新输入信息？', '是', '否').then(async (value) => {
+                        if (value === '是') {
+                            this.login(true);
+                        }
+                    });
+                }
+            } catch (error) {
+                vscode.window.showErrorMessage('登录失败，请检查服务地址是否正确，是否重新输入信息？', '是', '否').then(async (value) => {
                     if (value === '是') {
                         this.login(true);
                     }
                 });
             }
-        } catch (error) {
-            vscode.window.showErrorMessage('登录失败，请检查服务地址是否正确，是否重新输入信息？', '是', '否').then(async (value) => {
-                if (value === '是') {
-                    this.login(true);
-                }
-            });
+        } else {
+            vscode.window.showErrorMessage('请先打开一个工作区，然后重试。');
         }
     }
 }

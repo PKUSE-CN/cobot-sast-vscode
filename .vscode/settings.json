@@ -12,5 +12,10 @@
     "typescript.tsc.autoDetect": "off",
     "cSpell.words": [
         "sast"
-    ]
+    ],
+    "cobot-sast-vscode.address": "http://192.168.5.57:58989",
+    "cobot-sast-vscode.username": "admin",
+    "cobot-sast-vscode.password": "serc1727",
+    "cobot-sast-vscode.projectPath": "/Users/administrator/Documents/PKUSEWork/cobot-sast-vscode",
+    "cobot-sast-vscode.projectId": "6462f6dd99ef631d1fbc52fb"
 }

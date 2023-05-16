@@ -125,7 +125,6 @@ export class CheckResultTreeDataProvider implements vscode.TreeDataProvider<Chec
 
     // 刷新树形结构
     async refresh(fileName: string = ''): Promise<void> {
-        // TODO: 重新获取问题列表
         this._onDidChangeTreeData.fire(undefined);
         this.hasMore = true;
         this.pageNum = 0;

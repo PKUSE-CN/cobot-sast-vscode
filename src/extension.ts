@@ -26,10 +26,14 @@ export async function activate(context: vscode.ExtensionContext) {
 
 
     context.subscriptions.push(vscode.commands.registerCommand('cobot-sast-vscode.checkProject', async () => {
-        const { serverAddress, config } = loginController.getConfig();
+        const config = vscode.workspace.getConfiguration('cobot-sast-vscode');
+        const serverAddress = config.get<string>('address');
+        const projectName = config.get<string>('projectName');
+        // const projectId = config.get<string>('projectId');
         try {
-            // TODO: 从设置里获取ID
+            // TODO: 通过Id筛选，目前无法获取
             const searchName = await vscode.window.showInputBox({
+                value: projectName,
                 prompt: '请输入项目名',
                 ignoreFocusOut: true,
                 validateInput: (value) => {
@@ -44,15 +48,18 @@ export async function activate(context: vscode.ExtensionContext) {
                 placeHolder: '请选择要检测的项目',
                 ignoreFocusOut: true,
             });
-            await config.update('projectId', selection.projectId, vscode.ConfigurationTarget.Global);
+            await config.update('projectName', searchName);
+            await config.update('projectId', selection.projectId);
             if (selection) {
                 if (selection.analysisStatus === 2) {
-                    const reCheck = await vscode.window.showQuickPick([{ label: '是' }, { label: '否', description: '直接获取检测结果' }], {
+                    const reCheck = await vscode.window.showQuickPick([
+                        { label: '是' },
+                        { label: '否', description: '直接获取检测结果' }
+                    ], {
                         title: '项目已完成检测，是否重新检测？',
                         ignoreFocusOut: true,
                     });
                     if (reCheck?.label !== '是') {
-                        // TODO: 获取检测结果
                         vscode.commands.executeCommand('cobot-sast-vscode.checkResult.refresh');
                         return;
                     }
@@ -115,9 +122,8 @@ export async function activate(context: vscode.ExtensionContext) {
     }));
 
     context.subscriptions.push(vscode.commands.registerCommand('cobot-sast-vscode.uploadProject', () => {
-        const { serverAddress, config } = loginController.getConfig();
         const fileTestController = new FileUploadController();
-        fileTestController.selectFolder(serverAddress, config);
+        fileTestController.selectFolder();
     }));
 
     const checkResultProvider = new CheckResultTreeDataProvider();
