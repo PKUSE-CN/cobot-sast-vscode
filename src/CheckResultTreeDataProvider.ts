@@ -1,8 +1,9 @@
-// 导入VSCode API
+/* eslint-disable @typescript-eslint/naming-convention */
 import axios from 'axios';
-import path = require('path');
 import * as vscode from 'vscode';
+import { getProjectName, getToken } from './ConfigController';
 import { getLevelColor } from './defectLevel';
+import path = require('path');
 interface FilePos {
     filePath: string,
     fileLine: number,
@@ -54,7 +55,7 @@ export class CheckResultTreeDataProvider implements vscode.TreeDataProvider<Chec
     private vulnerabilities: any[] = [];
     private hasMore = true;
     private pageNum = 0;
-    private pageSize = 100;
+    private pageSize = 10000;
     private total = 0;
     private fileName = '';
 
@@ -69,11 +70,23 @@ export class CheckResultTreeDataProvider implements vscode.TreeDataProvider<Chec
     // 获取最近的检测问题
     async getVulnerability() {
         try {
-            const config = vscode.workspace.getConfiguration('cobot-sast-vscode');
-            const serverAddress = config.get<string>('address');
-            const projectId = config.get<string>('projectId');
-            if (serverAddress && projectId) {
-                const res = await axios.get(`${serverAddress}/cobot/defect/listDefectByFilter?pageNum=${this.pageNum}&pageSize=${this.pageSize}&sortBy=asc&sortName=level&projectId=${projectId}&aboutMe=false&fileName=${this.fileName}`,);
+            const { serviceUrl, token } = getToken();
+            const projectName = getProjectName();
+            if (serviceUrl && token && projectName) {
+                const encodedProjectName = encodeURIComponent(projectName);
+                const res = await axios.get(`${serviceUrl}/cobot/api/project/${encodedProjectName}/defect`, {
+                    params: {
+                        fileName: this.fileName,
+                        sortBy: 'asc',
+                        sortName: 'level',
+                        pageNum: this.pageNum,
+                        pageSize: this.pageSize,
+                    },
+                    headers: {
+                        'Authorization': token,
+                    },
+                });
+                console.log(res);
                 this.total = res.data.data.total;
                 if (this.pageNum === 0) {
                     this.vulnerabilities = await res.data.data.codeDefectVOList.map((x: any) => new CheckResultTreeItem(x.id, x.fileName, x.defectType.name, '', 1, { filePath: x.filePath }, x.level.name,));
@@ -191,11 +204,15 @@ async function openFile(filePath: string, line: number, column: number = 0, colu
 // 获取指定问题的详细信息
 async function getHistoryDetails(defectId: string): Promise<CheckResultTreeItem[]> {
     try {
-        const config = vscode.workspace.getConfiguration('cobot-sast-vscode');
-        const serverAddress = config.get<string>('address');
-        const projectId = config.get<string>('projectId');
-        if (serverAddress && projectId) {
-            const res = await axios.get(`${serverAddress}/cobot/defect/getDetail?defectId=${defectId}&projectId=${projectId}`);
+        const { serviceUrl, token } = getToken();
+        const projectName = getProjectName();
+        if (serviceUrl && token && projectName) {
+            const encodedProjectName = encodeURIComponent(projectName);
+            const res = await axios.get(`${serviceUrl}/cobot/api/project/${encodedProjectName}/defect/${defectId}`, {
+                headers: {
+                    'Authorization': token,
+                }
+            });
             const { id, path, desc, linNum } = res.data.data;
             const detail: any[] = res.data.data.trackList.map((x: any) => new CheckResultTreeItem(x.id, '缺陷跟踪: ' + x.filePath, x.descript, 'checkResult.showDetails', 0, { filePath: x.filePath, fileLine: x.line },));
             detail.unshift(new CheckResultTreeItem('detail' + id, path, desc, 'checkResult.showDetails', 0, { filePath: path, fileLine: linNum },));

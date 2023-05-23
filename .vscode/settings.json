@@ -13,9 +13,7 @@
     "cSpell.words": [
         "sast"
     ],
-    "cobot-sast-vscode.address": "http://192.168.5.57:58989",
-    "cobot-sast-vscode.username": "admin",
-    "cobot-sast-vscode.password": "serc1727",
-    "cobot-sast-vscode.projectPath": "/Users/administrator/Documents/PKUSEWork/cobot-sast-vscode",
-    "cobot-sast-vscode.projectId": "6462f6dd99ef631d1fbc52fb"
+    "cobot-sast-vscode.token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2ODQ0ODkxMjcsInVzZXJuYW1lIjoiYWRtaW4ifQ.Jj98ZN67fUfz-e-Yskbqbk4Vtn_DDDb8iHH0Lka69jY",
+    "cobot-sast-vscode.url": "192.168.5.57:58989",
+    "cobot-sast-vscode.projectName": "cobot-sast-vscode",
 }
