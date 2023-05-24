@@ -100,12 +100,12 @@
                 "cobot-sast-vscode.url": {
                     "type": "string",
                     "default": "",
-                    "description": "库博静态代码分析服务端地址"
+                    "description": "库博静态代码分析工具服务端地址"
                 },
                 "cobot-sast-vscode.token": {
                     "type": "string",
                     "default": "",
-                    "description": "库博静态代码分析密钥"
+                    "description": "库博静态代码分析工具密钥"
                 },
                 "cobot-sast-vscode.projectName": {
                     "type": "string",
