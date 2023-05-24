@@ -2,7 +2,7 @@
     "name": "cobot-sast-vscode",
     "displayName": "库博静态代码分析工具",
     "description": "可以对项目进行静态分析的插件",
-    "version": "0.0.3",
+    "version": "1.0.0",
     "publisher": "PKUSE",
     "engines": {
         "vscode": "^1.77.0"
