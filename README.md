@@ -20,7 +20,6 @@
 
 6. 检测完成后即可右键资源管理器中检测过的项目文件右键选择 `cobot: 筛选文件资源管理器结果` 筛选检测结果![文件筛选结果](/images/explorer-find-result.GIF)也可以通过点击打开的文件编辑器中右键选择 `cobot: 筛选当前编辑器文件结果` 获取检测结果![编辑器筛选结果](/images/editor-find-result.GIF)
 
-
 [库博静态代码分析工具前端服务]: http://192.168.1.43:50180/cobot-sast-buss/cobot-fe
 
 [Visual Studio 市场]: https://marketplace.visualstudio.com/items?itemName=PKUSE.cobot-sast-vscode
@@ -88,6 +87,10 @@
   * 检测完成后$\color{green} {调用检测结果接口} $
 * 检测结果修改为默认获取10k条，正常情况无需犯法加载更多，可以通过按(`Ctrl+F` 或者在Mac上 `Cmd+F`)初步筛选检测结果了
 * 修改了readme.md中的操作步骤并重新录制了操作流程
+
+### 1.0.1
+
+* 解决fs.ReadStream操作冲突导致在MacOS 13.4下无法正确上传文件的问题
 
 ## 后续可能计划
 

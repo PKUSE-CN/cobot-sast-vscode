@@ -11,12 +11,12 @@ import { formatSize, getFolderSize } from './Utils';
  * @param folderName 要压缩的文件夹名称
  * @returns 压缩包的Buffer
  */
-export const compressFolderInTemp = async (folderPath: string): Promise<fs.ReadStream> => {
+export const compressFolderInTemp = async (folderPath: string): Promise<any> => {
     return new Promise((resolve, reject) => {
         try {
             const nextLevelFolderPath = path.join(folderPath, path.sep);
             const archive = archiver('zip', { zlib: { level: 9 } });
-            const total = getFolderSize(folderPath)
+            const total = getFolderSize(folderPath);
 
             tmp.file((err: any, tmpFilePath: any, fd: any, cleanupCallback: any) => {
                 if (err) {
@@ -33,24 +33,24 @@ export const compressFolderInTemp = async (folderPath: string): Promise<fs.ReadS
 
                 output.on('finish', () => {
                     const buffer = fs.readFileSync(tmpFilePath);
-                    const fileStream = fs.createReadStream(tmpFilePath);
+                    // const fileStream = fs.createReadStream(tmpFilePath);
                     console.log(tmpFilePath);
                     console.log(`压缩后大小：${formatSize(buffer.length)}`);
-                    resolve(fileStream);
-                    cleanupCallback();
+                    resolve([tmpFilePath, cleanupCallback]);
+                    // cleanupCallback();
                     console.log('临时压缩包已被清理');
                 });
 
                 output.on('end', () => {
                     console.log('Data has been drained');
-                    cleanupCallback();
+                    // cleanupCallback();
                     console.log('临时压缩包已被清理');
                 });
 
                 output.on('error', (error: any) => {
                     console.error(error);
                     reject(error);
-                    cleanupCallback();
+                    // cleanupCallback();
                     console.log('临时压缩包已被清理');
                 });
 
