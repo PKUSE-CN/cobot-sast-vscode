@@ -9,13 +9,13 @@ import FormData = require('form-data');
 
 
 
-export const uploadProject = async (fileStream: string, projectName: string) => {
+export const uploadProject = async (filePath: string, projectName: string) => {
     try {
         const defectConfigId = '5e57409394bbd91d299f2a1b';
         const { serviceUrl, token } = getToken();
         if (serviceUrl && token) {
             const formData = new FormData();
-            const tmpfileStream = fs.createReadStream(fileStream);
+            const tmpfileStream = fs.createReadStream(filePath);
             formData.append('files', tmpfileStream, { filename: `${projectName}.zip` });
             let previousLoaded = 0; // 用于保存上一次进度事件的 loaded 值
             await vscode.window.withProgress({
@@ -55,13 +55,13 @@ export const uploadProject = async (fileStream: string, projectName: string) => 
     }
 };
 
-export const updateProject = async (fileStream: string, projectName: string) => {
+export const updateProject = async (filePath: string, projectName: string) => {
     try {
         const defectConfigId = '5e57409394bbd91d299f2a1b';
         const { serviceUrl, token } = getToken();
         if (serviceUrl && token) {
             const formData = new FormData();
-            const tmpfileStream = fs.createReadStream(fileStream);
+            const tmpfileStream = fs.createReadStream(filePath);
             formData.append('importFiles', tmpfileStream, { filename: `${projectName}.zip` });
             let previousLoaded = 0; // 用于保存上一次进度事件的 loaded 值
             await vscode.window.withProgress({
@@ -180,7 +180,7 @@ export const statusVerification = async ({ 首次调用, 刚完成上传 }: 状�
                         ignoreFocusOut: true,
                     });
                     if (reUpload?.label === '是') {
-                        const [tmpZipPath,cleanupCallback] = await compressFolderInTemp(projectPath);
+                        const [tmpZipPath, cleanupCallback] = await compressFolderInTemp(projectPath);
                         tmpZipPath && await updateProject(tmpZipPath, projectName);
                         cleanupCallback();
                     }
@@ -206,7 +206,7 @@ export const statusVerification = async ({ 首次调用, 刚完成上传 }: 状�
                             ignoreFocusOut: true,
                         });
                         if (reCheck?.label === '重新上传') {
-                            const [tmpZipPath,cleanupCallback] = await compressFolderInTemp(projectPath);
+                            const [tmpZipPath, cleanupCallback] = await compressFolderInTemp(projectPath);
                             tmpZipPath && await updateProject(tmpZipPath, projectName);
                             cleanupCallback();
                             afterUpload(projectName);
@@ -227,9 +227,9 @@ export const statusVerification = async ({ 首次调用, 刚完成上传 }: 状�
                     statusBar.show();
                 }
             } else {
-                const [tmpZipPath,cleanupCallback] = await compressFolderInTemp(projectPath);
+                const [tmpZipPath, cleanupCallback] = await compressFolderInTemp(projectPath);
                 tmpZipPath && await uploadProject(tmpZipPath, projectName);
-                cleanupCallback()
+                cleanupCallback();
                 afterUpload(projectName);
             }
         }
