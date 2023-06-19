@@ -2,7 +2,7 @@
     "name": "cobot-sast-vscode",
     "displayName": "库博静态代码分析工具",
     "description": "CoBOT V4.3是由北京北大软件工程发展有限公司研发的一种程序静态分析工具，采用全新的静态分析框架，可以有效地降低误报率和漏报率。",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "publisher": "PKUSE",
     "engines": {
         "vscode": "^1.77.0"
