@@ -17,7 +17,7 @@ export async function activate(context: vscode.ExtensionContext) {
                     const config = vscode.workspace.getConfiguration('cobot-sast-vscode');
                     await config.update('projectName', folderName);
                     await config.update('projectPath', folderPath);
-                    statusVerification(folderPath);
+                    statusVerification();
                 }
                 else {
                     vscode.window.showErrorMessage(`文件夹${folderName}路径或名称获取异常，路径为:${folderPath}，请重试`);

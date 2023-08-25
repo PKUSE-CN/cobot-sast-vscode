@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import axios, { AxiosProgressEvent } from 'axios';
+import axios, { AxiosProgressEvent, AxiosResponse } from 'axios';
 import * as fs from 'fs';
 import * as vscode from 'vscode';
 import { getProjectName, getProjectPath, getToken } from './ConfigController';
@@ -7,7 +7,7 @@ import { compressFolderInTemp } from './FolderZipper';
 import { getCheckStatusName } from './Utils';
 import FormData = require('form-data');
 
-
+const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 export const uploadProject = async (filePath: string, projectName: string) => {
     try {
@@ -133,6 +133,39 @@ const scheduleVerification = (projectName: string, analysisStatus?: number, 刚�
         await statusVerification({ 刚完成上传, 首次调用: false });
     }, 1000);
 };
+const showProgress = async (projectName: string, encodedProjectName: string, serviceUrl: string, token: string, res: AxiosResponse<any, any>) => {
+    return new Promise<void>(async (resolve) => {
+        await vscode.window.withProgress({
+            location: vscode.ProgressLocation.Notification,
+            title: `${projectName}正在检测`,
+            cancellable: false,
+        }, async (progress) => {
+            let status = res.data.data?.analysisStatus;
+            let lastRate = res.data.data?.checkProgress === 100 ? 0 : res.data.data?.checkProgress;
+            while (status === 1) {
+                const response = await axios.get(`${serviceUrl}/cobot/api/project/${encodedProjectName}/checkStatus`, {
+                    headers: {
+                        Authorization: token,
+                    }
+                });
+                status = response.data.data?.analysisStatus;
+                if (status === 2) { break; }
+                const rate = response.data.data?.checkProgress === 100 ? 0 : response.data.data?.checkProgress;;
+                const increment = rate - lastRate;
+                lastRate = rate;
+                if (rate === 100) {
+                    // progress.report({ message: `检测完成！`, increment: increment });
+                } else {
+                    progress.report({ message: `检测中，进度${rate}%`, increment: increment });
+                    statusBar.text = `${projectName}：$(sync~spin)检测中${rate}%`;
+                    statusBar.show();
+                }
+                await delay(1000);
+            }
+            resolve();
+        });
+    });
+};
 
 interface 状态 {
     首次调用: boolean,
@@ -150,21 +183,23 @@ export const statusVerification = async ({ 首次调用, 刚完成上传 }: 状�
                 Authorization: token,
             }
         });
-        console.log(res.data.data?.analysisStatus);
+        const status = res.data.data?.analysisStatus;
 
         if (刚完成上传) {
             // TODO 这部分应该可以优化掉
-            if (res.data.data?.analysisStatus !== 2) {
-                scheduleVerification(projectName, res.data.data?.analysisStatus, true);
+            if (status !== 2) {
+                if (status === 1) {
+                    await showProgress(projectName, encodedProjectName, serviceUrl, token, res);
+                }
+                scheduleVerification(projectName, status, true);
             } else {
                 vscode.window.showInformationMessage(`${projectName}: 检测完成`);
-                statusBar.text = `${projectName}: $(check)${getCheckStatusName(await res.data.data?.analysisStatus)}`;
+                statusBar.text = `${projectName}: $(check)${getCheckStatusName(await status)}`;
                 statusBar.show();
                 vscode.commands.executeCommand('cobot-sast-vscode.checkResult.refresh');
             }
         } else {
             if (res.data.msg !== '项目不存在') {
-                const status = res.data.data?.analysisStatus;
                 // 有代码无检测结果
                 if (status === 0 || status === 4) {
                     if (!首次调用 && status === 4) {
@@ -191,6 +226,9 @@ export const statusVerification = async ({ 首次调用, 刚完成上传 }: 状�
                     if (prevStatus !== status) {
                         vscode.window.showInformationMessage(`${projectName}: ${getCheckStatusName(status)}`);
                         prevStatus = status;
+                    }
+                    if (status === 1) {
+                        await showProgress(projectName, encodedProjectName, serviceUrl, token, res);
                     }
                     scheduleVerification(projectName, res.data.data?.analysisStatus);
                 }
