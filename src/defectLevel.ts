@@ -11,13 +11,13 @@ const levels = [
 ];
 
 const levelColor: Record<string, string> = {
-    致命: "level.fatal",
-    严重: "level.critical",
-    重要: "level.important",
-    次要: "level.minor",
-    提示: "level.hint",
-    强制: "level.required",
-    建议: "level.suggestion",
+    致命: "cobot.level.fatal",
+    严重: "cobot.level.critical",
+    重要: "cobot.level.important",
+    次要: "cobot.level.minor",
+    提示: "cobot.level.hint",
+    强制: "cobot.level.required",
+    建议: "cobot.level.suggestion",
 };
 
 export const getLevelColor = (level: string) => {

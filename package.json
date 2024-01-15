@@ -121,7 +121,7 @@
         },
         "colors": [
             {
-                "id": "level.fatal",
+                "id": "cobot.level.fatal",
                 "description": "严重等级颜色: 致命",
                 "defaults": {
                     "dark": "#701212",
@@ -129,7 +129,7 @@
                 }
             },
             {
-                "id": "level.critical",
+                "id": "cobot.level.critical",
                 "description": "严重等级颜色: 严重",
                 "defaults": {
                     "dark": "#c53030",
@@ -137,7 +137,7 @@
                 }
             },
             {
-                "id": "level.important",
+                "id": "cobot.level.important",
                 "description": "严重等级颜色: 重要",
                 "defaults": {
                     "dark": "#fc5d5d",
@@ -145,7 +145,7 @@
                 }
             },
             {
-                "id": "level.minor",
+                "id": "cobot.level.minor",
                 "description": "严重等级颜色: 次要",
                 "defaults": {
                     "dark": "#ffaa33",
@@ -153,7 +153,7 @@
                 }
             },
             {
-                "id": "level.hint",
+                "id": "cobot.level.hint",
                 "description": "严重等级颜色: 提示",
                 "defaults": {
                     "dark": "#d5c828",
@@ -161,7 +161,7 @@
                 }
             },
             {
-                "id": "level.required",
+                "id": "cobot.level.required",
                 "description": "严重等级颜色: 强制",
                 "defaults": {
                     "dark": "#4a90e2",
@@ -169,7 +169,7 @@
                 }
             },
             {
-                "id": "level.suggestion",
+                "id": "cobot.level.suggestion",
                 "description": "严重等级颜色: 建议",
                 "defaults": {
                     "dark": "#83d232",
