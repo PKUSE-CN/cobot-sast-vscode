@@ -22,21 +22,21 @@
     "contributes": {
         "commands": [
             {
-                "command": "cobot-sast-vscode.checkResult.refresh",
+                "command": "cobot-sast-vscode.cobot-checkResult.refresh",
                 "category": "库博静态代码分析工具",
                 "title": "刷新检测结果",
                 "icon": "$(refresh)"
             },
             {
-                "command": "cobot-sast-vscode.checkResult.checkProject",
+                "command": "cobot-sast-vscode.cobot-checkResult.checkProject",
                 "title": "cobot: 检测项目"
             },
             {
-                "command": "cobot-sast-vscode.checkResult.filterResultEditor",
+                "command": "cobot-sast-vscode.cobot-checkResult.filterResultEditor",
                 "title": "cobot: 筛选当前编辑器文件结果"
             },
             {
-                "command": "cobot-sast-vscode.checkResult.filterResultExplorer",
+                "command": "cobot-sast-vscode.cobot-checkResult.filterResultExplorer",
                 "title": "cobot: 筛选文件资源管理器结果"
             }
         ],
@@ -52,25 +52,25 @@
         "menus": {
             "view/title": [
                 {
-                    "command": "cobot-sast-vscode.checkResult.refresh",
-                    "when": "view == checkResult",
+                    "command": "cobot-sast-vscode.cobot-checkResult.refresh",
+                    "when": "view == cobot-checkResult",
                     "group": "navigation"
                 }
             ],
             "editor/context": [
                 {
-                    "command": "cobot-sast-vscode.checkResult.filterResultEditor",
+                    "command": "cobot-sast-vscode.cobot-checkResult.filterResultEditor",
                     "group": "menu"
                 }
             ],
             "explorer/context": [
                 {
-                    "command": "cobot-sast-vscode.checkResult.filterResultExplorer",
+                    "command": "cobot-sast-vscode.cobot-checkResult.filterResultExplorer",
                     "group": "menu",
                     "when": "!explorerResourceIsFolder"
                 },
                 {
-                    "command": "cobot-sast-vscode.checkResult.checkProject",
+                    "command": "cobot-sast-vscode.cobot-checkResult.checkProject",
                     "group": "menu",
                     "when": "explorerResourceIsFolder"
                 }
@@ -79,16 +79,16 @@
         "views": {
             "cobot": [
                 {
-                    "id": "info",
+                    "id": "cobot-info",
                     "name": "项目信息",
                     "visibility": "collapsed"
                 },
                 {
-                    "id": "checkResult",
+                    "id": "cobot-checkResult",
                     "name": "检测结果"
                 },
                 {
-                    "id": "setting",
+                    "id": "cobot-setting",
                     "name": "项目配置",
                     "visibility": "collapsed"
                 }

@@ -9,7 +9,7 @@ export async function activate(context: vscode.ExtensionContext) {
     getToken();
 
     context.subscriptions.push(
-        vscode.commands.registerCommand('cobot-sast-vscode.checkResult.checkProject', async (uri) => {
+        vscode.commands.registerCommand('cobot-sast-vscode.cobot-checkResult.checkProject', async (uri) => {
             if (uri && uri.fsPath) {
                 const folderPath = uri.fsPath;
                 const folderName = path.basename(folderPath);
@@ -31,13 +31,13 @@ export async function activate(context: vscode.ExtensionContext) {
     const checkResultProvider = new CheckResultTreeDataProvider();
 
     context.subscriptions.push(
-        vscode.commands.registerCommand('cobot-sast-vscode.checkResult.refresh', () => {
+        vscode.commands.registerCommand('cobot-sast-vscode.cobot-checkResult.refresh', () => {
             checkResultProvider.refresh();
         })
     );
 
     context.subscriptions.push(
-        vscode.commands.registerCommand('cobot-sast-vscode.checkResult.filterResultEditor', async () => {
+        vscode.commands.registerCommand('cobot-sast-vscode.cobot-checkResult.filterResultEditor', async () => {
             const editor = vscode.window.activeTextEditor;
             const filePath = editor && editor.document.fileName;
             const fileName = path.basename(filePath || '');
@@ -46,7 +46,7 @@ export async function activate(context: vscode.ExtensionContext) {
     );
 
     context.subscriptions.push(
-        vscode.commands.registerCommand('cobot-sast-vscode.checkResult.filterResultExplorer', async (uri) => {
+        vscode.commands.registerCommand('cobot-sast-vscode.cobot-checkResult.filterResultExplorer', async (uri) => {
             if (uri && uri.fsPath) {
                 const filePath = uri.fsPath;
                 const fileName = path.basename(filePath);
@@ -62,7 +62,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
 
     // 注册侧边栏
-    vscode.window.registerTreeDataProvider('checkResult', checkResultProvider);
+    vscode.window.registerTreeDataProvider('cobot-checkResult', checkResultProvider);
 
 }
 

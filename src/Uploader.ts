@@ -196,7 +196,7 @@ export const statusVerification = async ({ 首次调用, 刚完成上传 }: 状�
                 vscode.window.showInformationMessage(`${projectName}: 检测完成`);
                 statusBar.text = `${projectName}: $(check)${getCheckStatusName(await status)}`;
                 statusBar.show();
-                vscode.commands.executeCommand('cobot-sast-vscode.checkResult.refresh');
+                vscode.commands.executeCommand('cobot-sast-vscode.cobot-checkResult.refresh');
             }
         } else {
             if (res.data.msg !== '项目不存在') {
@@ -258,7 +258,7 @@ export const statusVerification = async ({ 首次调用, 刚完成上传 }: 状�
                     }
                     statusBar.text = `${projectName}: $(check)${getCheckStatusName(await res.data.data?.analysisStatus)}`;
                     statusBar.show();
-                    vscode.commands.executeCommand('cobot-sast-vscode.checkResult.refresh');
+                    vscode.commands.executeCommand('cobot-sast-vscode.cobot-checkResult.refresh');
                 } else {
                     vscode.window.showErrorMessage(`状态码出错！状态码为：${status}`);
                     statusBar.text = `${projectName}: $(error)检测出错`;

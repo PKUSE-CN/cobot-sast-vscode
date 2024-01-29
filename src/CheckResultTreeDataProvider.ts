@@ -46,7 +46,7 @@ class CheckResultTreeItem extends vscode.TreeItem {
 
 
 // 创建 showMore 命令占位符
-const showMorePlaceholder = new CheckResultTreeItem('showMore', '获取更多...', '', 'checkResult.showMore', 0);
+const showMorePlaceholder = new CheckResultTreeItem('showMore', '获取更多...', '', 'cobot-checkResult.showMore', 0);
 
 
 export class CheckResultTreeDataProvider implements vscode.TreeDataProvider<CheckResultTreeItem> {
@@ -106,7 +106,7 @@ export class CheckResultTreeDataProvider implements vscode.TreeDataProvider<Chec
         } catch (error) {
             console.error(error);
         }
-        await vscode.commands.executeCommand('checkResult.focus');
+        await vscode.commands.executeCommand('cobot-checkResult.focus');
     }
 
     // 获取树形结构的子节点
@@ -150,7 +150,7 @@ export class CheckResultTreeDataProvider implements vscode.TreeDataProvider<Chec
 // 注册命令：显示检测问题的详细信息
 export function registerShowDetailsCommand(context: vscode.ExtensionContext) {
     context.subscriptions.push(
-        vscode.commands.registerCommand('checkResult.showDetails', ({ label, description, filePosition }: CheckResultTreeItem) => {
+        vscode.commands.registerCommand('cobot-checkResult.showDetails', ({ label, description, filePosition }: CheckResultTreeItem) => {
             const { fileColumn, fileColumnEnd, fileLine, filePath } = filePosition;
             openFile(filePath, fileLine, fileColumn, fileColumnEnd);
             vscode.window.showInformationMessage(`${label}\n${description}`);
@@ -160,7 +160,7 @@ export function registerShowDetailsCommand(context: vscode.ExtensionContext) {
 // 注册命令：显示更多问题
 export function registerShowMoreCommand(context: vscode.ExtensionContext, provider: CheckResultTreeDataProvider) {
     context.subscriptions.push(
-        vscode.commands.registerCommand('checkResult.showMore', async () => {
+        vscode.commands.registerCommand('cobot-checkResult.showMore', async () => {
             try {
                 await provider.showMore();
             } catch (error) {
@@ -214,8 +214,8 @@ async function getHistoryDetails(defectId: string): Promise<CheckResultTreeItem[
                 }
             });
             const { id, path, desc, linNum } = res.data.data;
-            const detail: any[] = res.data.data.trackList.map((x: any) => new CheckResultTreeItem(x.id, '缺陷跟踪: ' + x.filePath, x.descript, 'checkResult.showDetails', 0, { filePath: x.filePath, fileLine: x.line },));
-            detail.unshift(new CheckResultTreeItem('detail' + id, path, desc, 'checkResult.showDetails', 0, { filePath: path, fileLine: linNum },));
+            const detail: any[] = res.data.data.trackList.map((x: any) => new CheckResultTreeItem(x.id, '缺陷跟踪: ' + x.filePath, x.descript, 'cobot-checkResult.showDetails', 0, { filePath: x.filePath, fileLine: x.line },));
+            detail.unshift(new CheckResultTreeItem('detail' + id, path, desc, 'cobot-checkResult.showDetails', 0, { filePath: path, fileLine: linNum },));
             return detail;
         }
     } catch (error) {
