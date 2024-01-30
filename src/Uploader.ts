@@ -212,12 +212,14 @@ export const statusVerification = async ({ 首次调用, 刚完成上传 }: 状�
                         { label: '否', description: '进行检测' }
                     ], {
                         title: `项目${getCheckStatusName(status)}，是否重新上传？`,
-                        ignoreFocusOut: true,
                     });
                     if (reUpload?.label === '是') {
                         const [tmpZipPath, cleanupCallback] = await compressFolderInTemp(projectPath);
                         tmpZipPath && await updateProject(tmpZipPath, projectName);
                         cleanupCallback();
+                    } else if (reUpload?.label === '否') {
+                    } else {
+                        return;
                     }
                     afterUpload(projectName);
                 }
@@ -241,7 +243,6 @@ export const statusVerification = async ({ 首次调用, 刚完成上传 }: 状�
                             { label: '否', description: '直接获取检测结果' }
                         ], {
                             title: '项目已完成检测，是否重新检测？',
-                            ignoreFocusOut: true,
                         });
                         if (reCheck?.label === '重新上传') {
                             const [tmpZipPath, cleanupCallback] = await compressFolderInTemp(projectPath);
@@ -251,6 +252,9 @@ export const statusVerification = async ({ 首次调用, 刚完成上传 }: 状�
                             return;
                         } else if (reCheck?.label === '检测') {
                             afterUpload(projectName);
+                            return;
+                        } else if (reCheck?.label === '否') {
+                        } else {
                             return;
                         }
                     } else {
